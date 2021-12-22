@@ -1,0 +1,9 @@
+{ default: default } := import('std')
+
+Env := env()
+
+Port := Env.PORT |> default(7575)
+
+AIInferenceURL := Env.AI_INFERENCE_URL |> default('')
+AIInferenceToken := Env.AI_INFERENCE_TOKEN |> default('')
+

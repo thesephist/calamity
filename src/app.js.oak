@@ -1,0 +1,142 @@
+{
+	println: println
+	default: default
+	slice: slice
+	map: map
+} := import('std')
+{
+} := import('str')
+
+json := import('json')
+{
+	Renderer: Renderer
+	h: h
+} := import('../lib/torus.js')
+
+DefaultTokens := 20
+DefaultN := 5
+
+State := {
+	params: {
+		// mirrors the parameter names used in the GPT2 API
+		tokens: DefaultTokens
+		n: DefaultN
+	}
+	docIdx: 0
+	docs: [{
+		prompt: 'Today, I will finally s'
+		completions: []
+	}]
+	// TODO: to try...
+	// topic extraction
+	// mailing list archive format
+}
+
+fn fetchCompletion(prompt, withCompletions) {
+	resp := with fetch('/gen') {
+		method: 'POST'
+		body: json.serialize({
+			text: prompt
+			tokens: State.params.tokens
+			n: State.params.n
+		})
+	}
+
+	fn handleErr(e) {
+		withCompletions([prompt + '(error: ' + bind(e, :toString)() + ')'])
+	}
+
+	bind(resp, :catch)(handleErr)
+	jsonResp := with bind(resp, :then)() fn(r) if r.status {
+		200 -> bind(r, :json)()
+		_ -> handleErr('Request failed.')
+	}
+
+	bind(jsonResp, :catch)(handleErr)
+	with bind(jsonResp, :then)() fn(data) if data {
+		? -> handleErr('Request serialization failed.')
+		_ -> withCompletions(data)
+	}
+}
+
+fn currentDoc() if doc := State.docs.(State.docIdx) {
+	? -> State.docs.(State.docIdx := 0)
+	_ -> doc
+}
+
+r := Renderer('#root')
+
+fn render {
+	with r.update() h(:div, ['app'], [
+		h(:div, ['sidebar'], [
+			h(:div, ['logo'], [
+				h(:a, [], { href: '/' }, ['Calamity'])
+			])
+			h(:nav, [], [
+				h(:a, [], { href: '/about/' }, ['about'])
+			])
+		])
+		h(:main, [], [
+			h(:div, ['editor-container'], [
+				h(:textarea, [], {
+					value: currentDoc().prompt
+				}, {
+					input: fn(evt) {
+						currentDoc().prompt := evt.target.value
+						render()
+					}
+					keydown: fn(evt) if [evt.key, evt.ctrlKey | evt.metaKey] {
+						['Enter', true] -> with fetchCompletion(currentDoc().prompt) fn(completions) {
+							doc := currentDoc()
+							doc.completions := completions |> with map() fn(completion) {
+								completion |> slice(len(doc.prompt))
+							}
+							render()
+						}
+					}
+				}, [])
+			])
+			h(:div, ['ai-controls'], [
+				h(:label, [], [
+					'Tokens'
+					h(:input, [], {
+						type: 'number'
+						min: '1'
+						max: '200'
+						value: State.params.tokens
+					}, {
+						input: fn(evt) {
+							State.params.tokens := int(evt.target.value) |> default(DefaultTokens)
+							render()
+						}
+					}, [])
+				])
+				h(:label, [], [
+					'Completions'
+					h(:input, [], {
+						type: 'number'
+						min: '1'
+						max: '50'
+						value: State.params.n
+					}, {
+						input: fn(evt) {
+							State.params.n := int(evt.target.value) |> default(DefaultN)
+							render()
+						}
+					}, [])
+				])
+			])
+			h(:div, ['completions-container'], {
+				{ prompt: prompt, completions: completions } := currentDoc()
+				completions |> with map() fn(completion) {
+					h(:div, ['completion'], [
+						h(:span, ['completion-prompt'], [prompt])
+						h(:span, ['completion-generated'], [completion])
+					])
+				}
+			})
+		])
+	])
+}
+render()
+

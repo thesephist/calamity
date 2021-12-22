@@ -1,0 +1,57 @@
+// Calamity is a rich text writing app using GPT-2
+//
+// TODO: Move Prometheus code into this repo for version control too, under
+// service/app.py
+
+{
+	println: println
+} := import('std')
+
+path := import('path')
+fmt := import('fmt')
+fs := import('fs')
+http := import('http')
+
+{
+	Port: Port
+	AIInferenceURL: AIInferenceURL
+	AIInferenceToken: AIInferenceToken
+} := import('config')
+
+server := http.Server()
+
+with server.route('/gen') fn(params) fn(apiReq, end) if apiReq.method {
+	'POST' -> with req({
+		method: 'POST'
+		url: AIInferenceURL
+		headers: { Authorization: 'Basic ' << AIInferenceToken }
+		body: apiReq.body
+	}) fn(evt) if evt.type {
+		:error -> end({
+			status: 500
+			headers: { 'Content-Type': http.MimeTypes.txt }
+			body: ''
+		})
+		:resp -> end(evt.resp)
+	}
+	_ -> end(http.MethodNotAllowed)
+}
+
+with server.route('/*staticPath') fn(params) {
+	http.handleStatic(path.join('./static', params.staticPath))
+}
+
+with server.route('/') fn(_) fn(req, end) {
+	with fs.readFile(path.join('./static', 'index.html')) fn(file) if file {
+		? -> end(http.NotFound)
+		_ -> end({
+			status: 200
+			headers: { 'Content-Type': http.MimeTypes.html }
+			body: file
+		})
+	}
+}
+
+server.start(Port)
+fmt.printf('Calamity running at :{{0}}', Port)
+
