@@ -3,3 +3,258 @@ body {
 	margin: 0;
 }
 
+body {
+	--font: system-ui, sans-serif;
+	--fg-main: #191a1d;
+	--fg-sub: #616870;
+	--fg-mute: #b0b5ba;
+	--bg-pure: #f9f9f9;
+	--bg-main: #e6e9ec;
+	--bg-sub: #e0e3e7;
+	--accent: #4750d8;
+	--accent-sub: #a0a3dd;
+	--accent-hover: #7278dd;
+
+	color: var(--fg-main);
+	background: var(--bg-main);
+}
+
+#root,
+.app {
+	font-family: var(--font);
+	width: calc(100% - 32px);
+	max-width: 1080px;
+	height: 100vh;
+	margin: 0 auto;
+}
+
+input,
+textarea,
+button {
+	color: var(--fg-main);
+	font-family: var(--font);
+	font-size: 1em;
+	transition: box-shadow .3s;
+}
+
+input:focus,
+textarea:focus,
+button:focus {
+	outline: none;
+	box-shadow: 0 4px 14px -2px rgba(0, 0, 0, .2);
+}
+
+textarea {
+	resize: none;
+}
+
+label .label-text {
+	color: var(--fg-sub);
+	margin-right: 1ch;
+}
+
+label input {
+	min-width: 6ch;
+}
+
+.floating {
+	padding: 12px 12px;
+	background: var(--bg-pure);
+	border-radius: 6px;
+	border: 0;
+	box-shadow: 0 4px 24px -2px rgba(0, 0, 0, .08);
+	transition: color .3s, background .3s, box-shadow .3s;
+}
+
+.floating:not(.inactive):hover {
+	box-shadow: 0 4px 14px -2px rgba(0, 0, 0, .2);
+}
+
+.floating.inactive {
+	color: var(--fg-sub);
+	background: transparent;
+	box-shadow: none;
+}
+
+.floating.accent {
+	color: var(--bg-pure);
+	background: var(--accent);
+}
+
+.floating.accent:hover {
+	background: var(--accent-hover);
+}
+
+/* app layout */
+
+.app {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.sidebar {
+	width: 250px;
+	flex-grow: 0;
+	flex-shrink: 0;
+	margin: 32px 16px 0 16px;
+}
+
+.logo a {
+	display: block;
+	line-height: 1.4em;
+	text-decoration: none;
+	font-weight: bold;
+	color: var(--fg-main);
+	margin: 12px 0 28px 0;
+}
+
+.logo-faded {
+	color: var(--fg-mute);
+}
+
+.logo:hover a {
+	color: var(--accent);
+}
+
+.logo:hover .logo-faded {
+	color: var(--accent-sub);
+}
+
+ul.docs-list {
+	padding-left: 0;
+}
+
+li.docs-item {
+	cursor: pointer;
+	list-style: none;
+	margin-bottom: 8px;
+	line-height: 1.4em;
+}
+
+li.docs-item:hover,
+li.docs-item.active {
+	background: var(--bg-pure);
+	box-shadow: 0 4px 24px -2px rgba(0, 0, 0, .08);
+	color: var(--fg-main);
+}
+
+li.docs-item.new-doc-button {
+	margin-bottom: 16px;
+}
+
+li.docs-item.empty {
+	font-style: italic;
+	color: var(--fg-sub);
+}
+
+main {
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+
+.editor-container {
+	margin-top: 32px;
+	position: relative;
+	margin-bottom: 16px;
+	line-height: 1.4em;
+}
+
+.editor-shadow {
+	white-space: pre-wrap;
+	min-height: calc(1.4em);
+}
+
+.editor-shadow.extra-height {
+	padding-bottom: calc(1.4em + 12px);
+}
+
+.editor-itself {
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	line-height: 1.4em;
+}
+
+.ai-controls {
+	margin-bottom: 16px;
+	justify-content: space-between;
+}
+
+.ai-controls,
+.ai-controls .left,
+.ai-controls .right {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 16px;
+}
+
+.ai-controls input {
+	line-height: 1.4em;
+}
+
+.ai-delete-button,
+.ai-generate-button {
+	cursor: pointer;
+}
+
+.completions-container:empty::before {
+	content: '¯\\_(ツ)_/¯';
+	color: var(--fg-sub);
+	text-align: center;
+	margin-top: 64px;
+	width: 100%;
+	display: block;
+}
+
+.completion {
+	white-space: pre-wrap;
+	margin-bottom: 16px;
+	line-height: 1.4em;
+	cursor: pointer;
+}
+
+.completion .completion-prompt {
+	color: var(--fg-mute);
+}
+
+/* loading */
+
+.loading {
+    width: calc(100% - 32px);
+	max-width: 320px;
+    flex-grow: 1;
+    margin: 64px auto;
+    height: 3px;
+    position: relative;
+    background: var(--accent-sub);
+    overflow: hidden;
+}
+
+@keyframes slider {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.loading::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 60%;
+    padding-right: 40%;
+    background: var(--accent);
+    position: relative;
+    top: 0;
+    left: 0;
+    animation: slider 1s linear infinite;
+}
+
