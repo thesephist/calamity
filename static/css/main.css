@@ -247,6 +247,20 @@ main {
 	color: #eb7357;
 }
 
+.ai-fav-button::before {
+	content: '';
+	display: block;
+	height: calc(1em + 2px);
+	width: calc(1em + 2px);
+	border-radius: 50%;
+	border: 2px solid var(--accent);
+	box-sizing: border-box;
+}
+
+.ai-fav-button.favorited::before {
+	background: var(--accent);
+}
+
 .completions-container:empty::before {
 	content: '¯\\_(ツ)_/¯';
 	color: var(--accent-hover);

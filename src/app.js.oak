@@ -276,7 +276,14 @@ fn render {
 					h(:button, ['floating', 'ai-clone-button'], {}, {
 						click: fn() currentDoc() |> cloneDoc() |> insertDoc()
 					}, ['Clone'])
-					h(:button, ['floating', 'ai-fav-button'], {}, {
+					h(:button, [
+						'floating'
+						'ai-fav-button'
+						if currentDoc().fav {
+							true -> 'favorited'
+							_ -> ''
+						}
+					], { title: 'Toggle favorite' }, {
 						click: fn {
 							if currentDoc().fav {
 								true -> currentDoc().fav := _
@@ -284,12 +291,7 @@ fn render {
 							}
 							persistAndRender()
 						}
-					}, [
-						if currentDoc().fav {
-							true -> 'Unfav'
-							_ -> 'Fav'
-						}
-					])
+					}, [])
 					h(:button, ['floating', 'accent', 'ai-generate-button'], {}, {
 						click: updateCompletions
 					}, ['Generate'])
