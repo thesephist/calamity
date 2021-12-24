@@ -164,6 +164,10 @@ fn render {
 									emptyPrompt? -> 'empty'
 									_ -> ''
 								}
+								if doc.fav {
+									true -> 'favorited'
+									_ -> ''
+								}
 							]
 							{
 								title: doc.prompt
@@ -228,7 +232,7 @@ fn render {
 				])
 			}
 			h(:div, ['ai-controls'], [
-				h(:div, ['left'], [
+				h(:div, ['ai-inputs'], [
 					h(:label, [], [
 						h(:span, ['label-text'], ['Tokens'])
 						h(:input, ['floating'], {
@@ -258,7 +262,7 @@ fn render {
 						}, [])
 					])
 				])
-				h(:div, ['right'], [
+				h(:div, ['ai-buttons'], [
 					if len(State.docs) {
 						1 -> ?
 						_ -> h(:button, ['floating', 'ai-delete-button'], {}, {
@@ -272,6 +276,20 @@ fn render {
 					h(:button, ['floating', 'ai-clone-button'], {}, {
 						click: fn() currentDoc() |> cloneDoc() |> insertDoc()
 					}, ['Clone'])
+					h(:button, ['floating', 'ai-fav-button'], {}, {
+						click: fn {
+							if currentDoc().fav {
+								true -> currentDoc().fav := _
+								_ -> currentDoc().fav := true
+							}
+							persistAndRender()
+						}
+					}, [
+						if currentDoc().fav {
+							true -> 'Unfav'
+							_ -> 'Fav'
+						}
+					])
 					h(:button, ['floating', 'accent', 'ai-generate-button'], {}, {
 						click: updateCompletions
 					}, ['Generate'])

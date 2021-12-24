@@ -63,7 +63,7 @@ a {
 }
 
 .floating {
-	padding: 12px 12px;
+	padding: 10px 12px;
 	background: var(--bg-pure);
 	border-radius: 6px;
 	border: 0;
@@ -136,6 +136,7 @@ li.docs-item {
 	list-style: none;
 	margin-bottom: 8px;
 	line-height: 1.4em;
+	position: relative;
 }
 
 li.docs-item:hover,
@@ -164,6 +165,29 @@ li.docs-item.empty {
 
 li.docs-item.empty .docs-item-meta {
 	color: var(--fg-mute);
+}
+
+li.docs-item::after {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	height: 8px;
+	width: 8px;
+	border-radius: 50%;
+	background: var(--accent-hover);
+	transition: background .3s, transform .2s;
+	transform: scale(0);
+}
+
+li.docs-item.favorited::after {
+	transform: scale(1);
+}
+
+li.docs-item.favorited:hover::after,
+li.docs-item.active.favorited::after {
+	background: var(--accent);
 }
 
 main {
@@ -203,8 +227,8 @@ main {
 }
 
 .ai-controls,
-.ai-controls .left,
-.ai-controls .right {
+.ai-controls .ai-inputs,
+.ai-controls .ai-buttons {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -215,14 +239,12 @@ main {
 	line-height: 1.4em;
 }
 
-.ai-delete-button {
-	color: #eb7357;
+.ai-controls .ai-buttons button {
+	cursor: pointer;
 }
 
-.ai-delete-button,
-.ai-clone-button,
-.ai-generate-button {
-	cursor: pointer;
+.ai-delete-button {
+	color: #eb7357;
 }
 
 .completions-container:empty::before {
