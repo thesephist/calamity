@@ -14,6 +14,7 @@ body {
 	--accent: #4750d8;
 	--accent-sub: #a0a3dd;
 	--accent-hover: #7278dd;
+	--danger: #eb7357;
 
 	color: var(--fg-main);
 	background: var(--bg-main);
@@ -55,6 +56,10 @@ label .label-text {
 
 label input {
 	min-width: 6ch;
+}
+
+a {
+	color: var(--accent);
 }
 
 .floating {
@@ -146,7 +151,19 @@ li.docs-item.new-doc-button {
 
 li.docs-item.empty {
 	font-style: italic;
+	color: var(--fg-mute);
+}
+
+.docs-item-meta {
+	margin-top: 2px;
+	margin-bottom: -4px;
+	font-size: .5em;
+	font-weight: bold;
 	color: var(--fg-sub);
+}
+
+li.docs-item.empty .docs-item-meta {
+	color: var(--fg-mute);
 }
 
 main {
@@ -198,14 +215,19 @@ main {
 	line-height: 1.4em;
 }
 
+.ai-delete-button {
+	color: #eb7357;
+}
+
 .ai-delete-button,
+.ai-clone-button,
 .ai-generate-button {
 	cursor: pointer;
 }
 
 .completions-container:empty::before {
 	content: '¯\\_(ツ)_/¯';
-	color: var(--fg-sub);
+	color: var(--accent-hover);
 	text-align: center;
 	margin-top: 64px;
 	width: 100%;

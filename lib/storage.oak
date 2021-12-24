@@ -1,0 +1,25 @@
+// localStorage wrapper
+
+{
+	debounce: debounce
+} := import('std')
+json := import('json')
+
+PersistenceInterval := 1
+
+fn load(key, defaultData) {
+	getItem := bind(window.localStorage, :getItem)
+	if data := getItem(key) {
+		? -> defaultData
+		_ -> json.parse(data)
+	}
+}
+
+fn persistImmediately(key, data) {
+	serialized := json.serialize(data)
+	setItem := bind(window.localStorage, :setItem)
+	setItem(key, serialized)
+}
+
+persist := debounce(PersistenceInterval, persistImmediately)
+

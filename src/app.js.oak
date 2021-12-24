@@ -3,13 +3,20 @@
 	default: default
 	slice: slice
 	map: map
+	merge: merge
+	filter: filter
 	append: append
 } := import('std')
 {
 	endsWith?: endsWith?
+	padStart: padStart
+	trim: trim
 } := import('str')
+fmt := import('fmt')
+datetime := import('datetime')
 
 json := import('json')
+storage := import('../lib/storage')
 {
 	Renderer: Renderer
 	h: h
@@ -17,33 +24,33 @@ json := import('json')
 
 DefaultTokens := 20
 DefaultN := 5
+StateStorageKey := 'calamity_db'
 
-State := {
+State := storage.load(StateStorageKey, {
 	fetching?: false
-	params: {
-		// mirrors the parameter names used in the GPT2 API
-		tokens: DefaultTokens
-		n: DefaultN
-	}
 	docIdx: 0
 	docs: [{
-		prompt: 'Today, I will finally s'
+		params: {
+			// mirrors the parameter names used in the GPT2 API
+			tokens: DefaultTokens
+			n: DefaultN
+		}
+		prompt: ''
 		completions: []
+		created: int(time())
 	}]
-	// TODO: to try...
-	// topic extraction
-	// mailing list archive format
-}
+})
 
 fn fetchCompletion(prompt, withCompletions) {
 	render(State.fetching? := true)
 
+	{ tokens: tokens, n: n } := currentDoc().params
 	resp := with fetch('/gen') {
 		method: 'POST'
 		body: json.serialize({
 			text: prompt
-			tokens: State.params.tokens
-			n: State.params.n
+			tokens: tokens
+			n: n
 		})
 	}
 
@@ -69,13 +76,16 @@ fn fetchCompletion(prompt, withCompletions) {
 
 fn updateCompletions() if State.fetching? {
 	true -> ?
-	_ -> with fetchCompletion(currentDoc().prompt) fn(completions) {
+	_ -> {
 		doc := currentDoc()
-		doc.completions := completions |> with map() fn(completion) [
-			doc.prompt
-			completion |> slice(len(doc.prompt))
-		]
-		render()
+		prompt := doc.prompt
+		with fetchCompletion(prompt) fn(completions) {
+			doc.completions := completions |> with map() fn(completion) [
+				prompt
+				completion |> slice(len(prompt))
+			]
+			persistAndRender()
+		}
 	}
 }
 
@@ -89,6 +99,39 @@ fn truncate(s, n) if len(s) < n {
 	_ -> s |> slice(0, n) + '...'
 }
 
+fn focusPromptInput {
+	if promptEditor := bind(document, :querySelector)('.prompt-editor-input') {
+		? -> ?
+		_ -> {
+			bind(promptEditor, :focus)()
+			bind(promptEditor, :setSelectionRange)(len(promptEditor.value), len(promptEditor.value))
+		}
+	}
+}
+
+fn insertDoc(attrs) {
+	newDoc := {
+		params: {
+			tokens: DefaultTokens
+			n: DefaultN
+		}
+		prompt: ''
+		completions: []
+	} |> merge(attrs, { created: int(time()) })
+	State.docs := [newDoc] |> append(State.docs)
+	State.docIdx := 0
+	persistAndRender()
+
+	focusPromptInput()
+}
+
+fn cloneDoc(doc) doc |> json.serialize() |> json.parse()
+
+fn persistAndRender {
+	storage.persist(StateStorageKey, State)
+	render()
+}
+
 r := Renderer('#root')
 
 fn render {
@@ -97,49 +140,60 @@ fn render {
 			h(:div, ['logo'], [
 				h(:a, [], { href: '/' }, [
 					'Calamity'
-					h(:span, ['logo-faded'], [', a notebook'])
+					h(:span, ['logo-faded'], [', an AI notebook'])
 				])
 			])
 			h(:div, ['docs-list-container'], [
 				h(:ul, ['docs-list'], {
 					addDocButton := h(:li, ['floating', 'inactive', 'docs-item', 'new-doc-button'], {}, {
-						click: fn {
-							State.docs := [{ prompt: '', completions: [] }] |> append(State.docs)
-							State.docIdx := 0
-							render()
+						click: fn() insertDoc({})
+					}, ['+ New prompt'])
 
-							// TODO: focus the new doc
-						}
-					}, ['+ New transcript'])
-
-					docItems := State.docs |> with map() fn(doc, i) h(
-						:li
-						[
-							'floating'
-							'docs-item'
-							if State.docIdx {
-								i -> 'active'
-								_ -> 'inactive'
+					docItems := State.docs |> with map() fn(doc, i) {
+						emptyPrompt? := doc.prompt |> trim() = ''
+						h(
+							:li
+							[
+								'floating'
+								'docs-item'
+								if State.docIdx {
+									i -> 'active'
+									_ -> 'inactive'
+								}
+								if {
+									emptyPrompt? -> 'empty'
+									_ -> ''
+								}
+							]
+							{
+								title: doc.prompt
 							}
-							if doc.prompt {
-								'' -> 'empty'
-								_ -> ''
+							{
+								click: fn {
+									State.docIdx := i
+									persistAndRender()
+								}
 							}
-						]
-						{}
-						{
-							click: fn {
-								State.docIdx := i
-								render()
-							}
-						}
-						[
-							if doc.prompt {
-								'' -> 'empty'
-								_ -> doc.prompt |> truncate(100)
-							}
-						]
-					)
+							[
+								h(:div, ['docs-item-content'], [
+									if {
+										emptyPrompt? -> 'empty'
+										_ -> doc.prompt |> truncate(72)
+									}
+								])
+								h(:div, ['docs-item-meta'], [{
+									{
+										year: year, month: month, day: day
+										hour: hour, minute: min
+									} := datetime.describe(doc.created)
+									'{{0}}/{{1}}/{{2}} {{3}}:{{4}}' |> fmt.format(
+										year, month, day, hour
+										string(min) |> padStart(2, '0')
+									)
+								}])
+							]
+						)
+					}
 
 					[addDocButton] |> append(docItems)
 				})
@@ -159,13 +213,13 @@ fn render {
 							_ -> ''
 						}
 					], [prompt])
-					h(:textarea, ['floating', 'editor-itself'], {
+					h(:textarea, ['prompt-editor-input', 'floating', 'editor-itself'], {
 						value: prompt
 						placeholder: 'Start a prompt...'
 					}, {
 						input: fn(evt) {
 							currentDoc().prompt := evt.target.value
-							render()
+							persistAndRender()
 						}
 						keydown: fn(evt) if [evt.key, evt.ctrlKey | evt.metaKey] {
 							['Enter', true] -> updateCompletions()
@@ -181,11 +235,11 @@ fn render {
 							type: 'number'
 							min: '1'
 							max: '200'
-							value: State.params.tokens
+							value: currentDoc().params.tokens
 						}, {
 							input: fn(evt) {
-								State.params.tokens := int(evt.target.value) |> default(DefaultTokens)
-								render()
+								currentDoc().params.tokens := int(evt.target.value) |> default(DefaultTokens)
+								persistAndRender()
 							}
 						}, [])
 					])
@@ -195,11 +249,11 @@ fn render {
 							type: 'number'
 							min: '1'
 							max: '50'
-							value: State.params.n
+							value: currentDoc().params.n
 						}, {
 							input: fn(evt) {
-								State.params.n := int(evt.target.value) |> default(DefaultN)
-								render()
+								currentDoc().params.n := int(evt.target.value) |> default(DefaultN)
+								persistAndRender()
 							}
 						}, [])
 					])
@@ -210,10 +264,14 @@ fn render {
 						_ -> h(:button, ['floating', 'ai-delete-button'], {}, {
 							click: fn {
 								State.docs := State.docs |> filter(fn(_, i) i != State.docIdx)
-								render()
+								State.docIdx := 0
+								persistAndRender()
 							}
 						}, ['Delete'])
 					}
+					h(:button, ['floating', 'ai-clone-button'], {}, {
+						click: fn() currentDoc() |> cloneDoc() |> insertDoc()
+					}, ['Clone'])
 					h(:button, ['floating', 'accent', 'ai-generate-button'], {}, {
 						click: updateCompletions
 					}, ['Generate'])
@@ -229,7 +287,9 @@ fn render {
 						h(:div, ['floating', 'completion'], {}, {
 							click: fn {
 								currentDoc().prompt := prompt + generated
-								render()
+								persistAndRender()
+
+								focusPromptInput()
 							}
 						}, [
 							h(:span, ['completion-prompt'], [prompt])
@@ -246,4 +306,8 @@ fn render {
 	])
 }
 render()
+
+with bind(window, :addEventListener)('beforeunload') fn {
+	storage.persistImmediately(StateStorageKey, State)
+}
 
