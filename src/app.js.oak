@@ -118,6 +118,8 @@ fn insertDoc(attrs) {
 		prompt: ''
 		completions: []
 	} |> merge(attrs, { created: int(time()) })
+	newDoc.fav := _
+
 	State.docs := [newDoc] |> append(State.docs)
 	State.docIdx := 0
 	persistAndRender()
