@@ -136,6 +136,8 @@ fn persistAndRender {
 
 r := Renderer('#root')
 
+fn Link(text, link) h(:a, [], { target: '_blank', href: link }, [text])
+
 fn render {
 	with r.update() h(:div, ['app'], [
 		h(:div, ['sidebar'], [
@@ -204,8 +206,17 @@ fn render {
 					[addDocButton] |> append(docItems)
 				})
 			])
-			h(:nav, [], [
-				h(:a, [], { href: '/about/' }, ['about'])
+			h(:div, ['masthead'], [
+				h(:p, [], [
+					Link('Calamity', 'https://github.com/thesephist/calamity')
+					' is a project by '
+					Link('Linus', 'https://thesephist.com')
+					' built with '
+					Link('Oak', 'https://oaklang.org/')
+					' and '
+					Link('Torus', 'https://github.com/thesephist/torus')
+					'.'
+				])
 			])
 		])
 		h(:main, [], [

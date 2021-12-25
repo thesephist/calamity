@@ -167,12 +167,16 @@ li.docs-item.empty .docs-item-meta {
 	color: var(--fg-mute);
 }
 
+li.docs-item .docs-item-content {
+	word-break: break-word;
+}
+
 li.docs-item::after {
 	content: '';
 	display: block;
 	position: absolute;
-	top: 6px;
-	right: 6px;
+	top: 8px;
+	right: 8px;
 	height: 8px;
 	width: 8px;
 	border-radius: 50%;
@@ -281,6 +285,12 @@ main {
 	color: var(--fg-mute);
 }
 
+.masthead {
+	color: var(--fg-sub);
+    line-height: 1.5em;
+    font-size: .75em;
+}
+
 /* loading */
 
 .loading {
@@ -314,5 +324,9 @@ main {
     top: 0;
     left: 0;
     animation: slider 1s linear infinite;
+}
+
+@media only screen and (max-width: 700px) {
+
 }
 
