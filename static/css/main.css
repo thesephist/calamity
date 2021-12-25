@@ -22,10 +22,13 @@ body {
 
 #root,
 .app {
+	height: 100vh;
+}
+
+.app {
 	font-family: var(--font);
 	width: calc(100% - 32px);
 	max-width: 1080px;
-	height: 100vh;
 	margin: 0 auto;
 }
 
@@ -100,7 +103,7 @@ a {
 }
 
 .sidebar {
-	width: 250px;
+	width: 320px;
 	flex-grow: 0;
 	flex-shrink: 0;
 	margin: 32px 16px 0 16px;
@@ -112,7 +115,7 @@ a {
 	text-decoration: none;
 	font-weight: bold;
 	color: var(--fg-main);
-	margin: 12px 0 28px 0;
+	margin: 12px 0 24px 0;
 }
 
 .logo-faded {
@@ -249,6 +252,8 @@ main {
 
 .ai-delete-button {
 	color: #eb7357;
+	min-width: calc(1em + 22px);
+	font-weight: bold;
 }
 
 .ai-fav-button::before {
@@ -326,7 +331,48 @@ main {
     animation: slider 1s linear infinite;
 }
 
-@media only screen and (max-width: 700px) {
+.mobile {
+	display: none;
+}
 
+@media only screen and (max-width: 1020px) {
+	.ai-inputs label {
+		font-size: .75em;
+	}
+	.sidebar {
+		width: 250px;
+	}
+}
+
+@media only screen and (max-width: 860px) {
+	.mobile {
+		display: initial;
+	}
+	.desktop {
+		display: none;
+	}
+	.sidebar-visible main,
+	.sidebar-hidden .sidebar {
+		display: none;
+	}
+	.sidebar {
+		margin: 32px 0;
+		width: 100%;
+	}
+}
+
+@media only screen and (max-width: 680px) {
+	.ai-controls {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.ai-inputs,
+	.ai-buttons {
+		width: 100%;
+		justify-content: space-between;
+	}
+	.ai-inputs label {
+		font-size: 1em;
+	}
 }
 

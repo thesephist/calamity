@@ -28,6 +28,7 @@ StateStorageKey := 'calamity_db'
 
 State := storage.load(StateStorageKey, {
 	fetching?: false
+	sidebar?: true
 	docIdx: 0
 	docs: [{
 		params: {
@@ -39,6 +40,9 @@ State := storage.load(StateStorageKey, {
 		completions: []
 		created: int(time())
 	}]
+}) |> merge({
+	docIdx: 0
+	sidebar?: false
 })
 
 fn fetchCompletion(prompt, withCompletions) {
@@ -139,7 +143,13 @@ r := Renderer('#root')
 fn Link(text, link) h(:a, [], { target: '_blank', href: link }, [text])
 
 fn render {
-	with r.update() h(:div, ['app'], [
+	with r.update() h(:div, [
+		'app'
+		if State.sidebar? {
+			true -> 'sidebar-visible'
+			_ -> 'sidebar-hidden'
+		}
+	], [
 		h(:div, ['sidebar'], [
 			h(:div, ['logo'], [
 				h(:a, [], { href: '/' }, [
@@ -150,7 +160,10 @@ fn render {
 			h(:div, ['docs-list-container'], [
 				h(:ul, ['docs-list'], {
 					addDocButton := h(:li, ['floating', 'inactive', 'docs-item', 'new-doc-button'], {}, {
-						click: fn() insertDoc({})
+						click: fn {
+							State.sidebar? := false
+							insertDoc({})
+						}
 					}, ['+ New prompt'])
 
 					docItems := State.docs |> with map() fn(doc, i) {
@@ -179,6 +192,7 @@ fn render {
 							{
 								click: fn {
 									State.docIdx := i
+									State.sidebar? := false
 									persistAndRender()
 								}
 							}
@@ -246,6 +260,12 @@ fn render {
 			}
 			h(:div, ['ai-controls'], [
 				h(:div, ['ai-inputs'], [
+					h(:button, ['floating', 'mobile'], { title: 'More prompts' }, {
+						click: fn {
+							State.sidebar? := !State.sidebar?
+							render()
+						}
+					}, ['☰'])
 					h(:label, [], [
 						h(:span, ['label-text'], ['Tokens'])
 						h(:input, ['floating'], {
@@ -278,13 +298,14 @@ fn render {
 				h(:div, ['ai-buttons'], [
 					if len(State.docs) {
 						1 -> ?
-						_ -> h(:button, ['floating', 'ai-delete-button'], {}, {
+						_ -> h(:button, ['floating', 'ai-delete-button'], { title: 'Delete' }, {
 							click: fn {
 								State.docs := State.docs |> filter(fn(_, i) i != State.docIdx)
 								State.docIdx := 0
+								State.sidebar? := true
 								persistAndRender()
 							}
-						}, ['Delete'])
+						}, ['×'])
 					}
 					h(:button, ['floating', 'ai-clone-button'], {}, {
 						click: fn() currentDoc() |> cloneDoc() |> insertDoc()
