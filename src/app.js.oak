@@ -157,16 +157,15 @@ fn render {
 					h(:span, ['logo-faded'], [', an AI notebook'])
 				])
 			])
+			h(:li, ['floating', 'inactive', 'docs-item', 'new-doc-button'], {}, {
+				click: fn {
+					State.sidebar? := false
+					insertDoc({})
+				}
+			}, ['+ New prompt'])
 			h(:div, ['docs-list-container'], [
 				h(:ul, ['docs-list'], {
-					addDocButton := h(:li, ['floating', 'inactive', 'docs-item', 'new-doc-button'], {}, {
-						click: fn {
-							State.sidebar? := false
-							insertDoc({})
-						}
-					}, ['+ New prompt'])
-
-					docItems := State.docs |> with map() fn(doc, i) {
+					State.docs |> with map() fn(doc, i) {
 						emptyPrompt? := doc.prompt |> trim() = ''
 						h(
 							:li
@@ -216,8 +215,6 @@ fn render {
 							]
 						)
 					}
-
-					[addDocButton] |> append(docItems)
 				})
 			])
 			h(:div, ['masthead'], [

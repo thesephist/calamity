@@ -61,10 +61,6 @@ label input {
 	min-width: 6ch;
 }
 
-a {
-	color: var(--accent);
-}
-
 .floating {
 	padding: 10px 12px;
 	background: var(--bg-pure);
@@ -107,6 +103,9 @@ a {
 	flex-grow: 0;
 	flex-shrink: 0;
 	margin: 32px 16px 0 16px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 32px);
 }
 
 .logo a {
@@ -130,8 +129,15 @@ a {
 	color: var(--accent-sub);
 }
 
+.docs-list-container {
+    height: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
 ul.docs-list {
 	padding-left: 0;
+    margin: 0;
 }
 
 li.docs-item {
@@ -200,6 +206,10 @@ li.docs-item.active.favorited::after {
 main {
 	flex-grow: 1;
 	flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    -webkit-overflow-scrolling: auto;
 }
 
 .editor-container {
@@ -270,6 +280,12 @@ main {
 	background: var(--accent);
 }
 
+.completions-container {
+    overflow-y: auto;
+    flex-grow: 1;
+    height; 0;
+}
+
 .completions-container:empty::before {
 	content: '¯\\_(ツ)_/¯';
 	color: var(--accent-hover);
@@ -294,6 +310,14 @@ main {
 	color: var(--fg-sub);
     line-height: 1.5em;
     font-size: .75em;
+}
+
+.masthead a {
+    color: inherit;
+}
+
+.masthead a:hover {
+    color: var(--accent);
 }
 
 /* loading */
