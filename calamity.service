@@ -1,0 +1,33 @@
+[Unit]
+Description=calamity server
+ConditionPathExists=/home/calamity-user/go/bin/oak
+After=network.target
+
+[Service]
+Type=simple
+User=calamity-user
+LimitNOFILE=1024
+PermissionsStartOnly=true
+
+Restart=on-failure
+RestartSec=100ms
+StartLimitIntervalSec=60
+
+Environment="PORT="
+Environment="AI_INFERENCE_URL="
+Environment="AI_INFERENCE_TOKEN="
+
+WorkingDirectory=/home/calamity-user/calamity
+ExecStart=/home/calamity-user/go/bin/oak ./src/main.oak
+
+# make sure log directory exists and owned by syslog
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/log/calamity
+ExecStartPre=/bin/chown syslog:adm /var/log/calamity
+ExecStartPre=/bin/chmod 755 /var/log/calamity
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=calamity
+
+[Install]
+WantedBy=multi-user.target
