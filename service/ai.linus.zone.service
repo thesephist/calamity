@@ -1,0 +1,13 @@
+[Unit]
+Description=GPT2 as an API server
+After=network.target
+
+[Service]
+User=calamity-user
+Group=www-data
+WorkingDirectory=/home/calamity-user/calamity/service
+ExecStart=/home/calamity-user/calamity/service/.venv/bin/uwsgi --ini app.ini
+
+[Install]
+WantedBy=multi-user.target
+
