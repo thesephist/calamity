@@ -278,7 +278,8 @@ fn render {
 						}, [])
 					])
 					h(:label, [], [
-						h(:span, ['label-text'], ['Completions'])
+						h(:span, ['label-text', 'desktop'], ['Completions'])
+						h(:span, ['label-text', 'mobile'], ['Seqs'])
 						h(:input, ['floating'], {
 							type: 'number'
 							min: '1'
