@@ -2,8 +2,9 @@ from flask import Flask, request, jsonify
 import time
 
 from transformers import pipeline, set_seed, GPT2Tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
-generator = pipeline('text-generation', model='gpt2-large')
+model_name = 'gpt2-xl'
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+generator = pipeline('text-generation', model=model_name)
 set_seed(int(time.time()))
 
 def infer(prompt, tokens_count, num_sequences):

@@ -1,6 +1,6 @@
 # Calamity 🌋
 
-**Calamity** is a lightweight web app that wraps my custom (private) GPT-2 API to let me play and experiment with GPT language models easily. It runs [Huggingface transformers](https://huggingface.co/gpt2) wrappers of language models (currently `gpt2-large`, 775M parameters, because it's cheaper than GPT-3/J/Neo/XLNet/whatever else) behind a Flask / UWSGI API on the backend, and a [Torus](https://github.com/thesephist/torus)/[Oak](https://oaklang.org)-based frontend that wraps the API. The backend lives in `./services`, and the frontend + frontend server in `./src`.
+**Calamity** is a lightweight web app that wraps my custom (private) GPT-2 API to let me play and experiment with GPT language models easily. It runs [Huggingface transformers](https://huggingface.co/gpt2) wrappers of language models (currently `gpt2-xl` with 1.5B parameters, because it's cheaper than GPT-3/J/Neo/XLNet/whatever else) behind a Flask / UWSGI API on the backend, and a [Torus](https://github.com/thesephist/torus)/[Oak](https://oaklang.org)-based frontend that wraps the API. The backend lives in `./services`, and the frontend + frontend server in `./src`.
 
 ![Calamity running in a browser](assets/screenshot.png)
 
