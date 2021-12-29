@@ -89,6 +89,13 @@ label input {
     background: var(--accent-hover);
 }
 
+.floating[disabled],
+.floating[disabled]:hover {
+    background: var(--accent);
+    opacity: .6;
+    cursor: no-drop;
+}
+
 /* app layout */
 
 .app {
@@ -210,6 +217,7 @@ main {
     flex-direction: column;
     width: 100%;
     height: 100%;
+    overflow-y: auto;
     -webkit-overflow-scrolling: auto;
 }
 
@@ -279,12 +287,6 @@ main {
 
 .ai-fav-button.favorited::before {
     background: var(--accent);
-}
-
-.completions-container {
-    overflow-y: auto;
-    flex-grow: 1;
-    height; 0;
 }
 
 .completions-container:empty::before {

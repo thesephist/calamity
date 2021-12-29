@@ -325,7 +325,9 @@ fn render {
 							persistAndRender()
 						}
 					}, [])
-					h(:button, ['floating', 'accent', 'ai-generate-button'], {}, {
+					h(:button, ['floating', 'accent', 'ai-generate-button'], {
+						disabled: State.fetching? = true
+					}, {
 						click: updateCompletions
 					}, ['Generate'])
 				])
