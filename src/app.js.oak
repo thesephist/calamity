@@ -41,6 +41,7 @@ State := storage.load(StateStorageKey, {
 		created: int(time())
 	}]
 }) |> merge({
+	fetching?: false
 	docIdx: 0
 	sidebar?: false
 })
