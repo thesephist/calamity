@@ -53,7 +53,7 @@ fn fetchCompletion(prompt, withCompletions) {
 	resp := with fetch('/gen') {
 		method: 'POST'
 		body: json.serialize({
-			text: prompt
+			text: prompt |> trim()
 			tokens: tokens
 			n: n
 		})
