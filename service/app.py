@@ -1,10 +1,22 @@
-from flask import Flask, request, jsonify
 import time
+from flask import Flask, request, jsonify
+from transformers import pipeline, set_seed, GPT2Tokenizer, GPT2LMHeadModel
 
-from transformers import pipeline, set_seed, GPT2Tokenizer
 model_name = 'gpt2-xl'
+
+# tokenizer
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-generator = pipeline('text-generation', model=model_name)
+
+# model
+model = GPT2LMHeadModel.from_pretrained(model_name)
+model.config.temperature = 0.75
+model.config.top_p = 0.9
+
+# generator pipeline
+generator = pipeline('text-generation',
+        tokenizer=tokenizer,
+        model=model)
+
 set_seed(int(time.time()))
 
 def infer(prompt, tokens_count, num_sequences):
