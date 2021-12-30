@@ -59,9 +59,7 @@ fn fetchCompletion(prompt, withCompletions) {
 		})
 	}
 
-	fn handleErr(e) {
-		render(State.fetching? := '(error: ' + bind(e, :toString)() + ')')
-	}
+	fn handleErr(e) render(State.fetching? := bind(e, :toString)())
 
 	bind(resp, :catch)(handleErr)
 	jsonResp := with bind(resp, :then)() fn(r) if r.status {
@@ -94,10 +92,7 @@ fn updateCompletions() if State.fetching? {
 	}
 }
 
-fn currentDoc() if doc := State.docs.(State.docIdx) {
-	? -> State.docs.(State.docIdx := 0)
-	_ -> doc
-}
+fn currentDoc() State.docs.(State.docIdx)
 
 fn truncate(s, n) if len(s) < n {
 	true -> s
@@ -300,8 +295,10 @@ fn render {
 						_ -> h(:button, ['floating', 'ai-delete-button'], { title: 'Delete' }, {
 							click: fn {
 								State.docs := State.docs |> filter(fn(_, i) i != State.docIdx)
-								State.docIdx := 0
 								State.sidebar? := true
+								if currentDoc() {
+									? -> State.docIdx := 0
+								}
 								persistAndRender()
 							}
 						}, ['×'])
@@ -352,7 +349,7 @@ fn render {
 						])
 					}
 					_ -> [h(:div, ['completions-error'], [
-						'error'
+						'Error: '
 						State.fetching? // error message
 					])]
 				}

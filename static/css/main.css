@@ -289,6 +289,13 @@ main {
     background: var(--accent);
 }
 
+.completions-error {
+    text-align: center;
+    margin: 64px 0;
+    width: 100%;
+    color: var(--accent);
+}
+
 .completions-container:empty::before {
     content: '¯\\_(ツ)_/¯';
     color: var(--accent-hover);
