@@ -1,7 +1,5 @@
-// Calamity is a rich text writing app using GPT-2
-//
-// TODO: Move Prometheus code into this repo for version control too, under
-// service/app.py
+// Calamity is a rapid prototyping interface for transformer-based
+// autoregressive language models like OpenAI's GPT
 
 {
 	println: println

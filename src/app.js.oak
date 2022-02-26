@@ -59,16 +59,16 @@ fn fetchCompletion(prompt, withCompletions) {
 		})
 	}
 
-	fn handleErr(e) render(State.fetching? := bind(e, :toString)())
+	fn handleErr(e) render(State.fetching? := String(e))
 
-	bind(resp, :catch)(handleErr)
-	jsonResp := with bind(resp, :then)() fn(r) if r.status {
-		200 -> bind(r, :json)()
+	resp |> call(:catch, handleErr)
+	jsonResp := with resp.then() fn(r) if r.status {
+		200 -> r.json()
 		_ -> handleErr('Request failed.')
 	}
 
-	bind(jsonResp, :catch)(handleErr)
-	with bind(jsonResp, :then)() fn(data) if data {
+	jsonResp |> call(:catch, handleErr)
+	with jsonResp.then() fn(data) if data {
 		? -> handleErr('Request serialization failed.')
 		_ -> {
 			render(State.fetching? := false)
@@ -100,11 +100,11 @@ fn truncate(s, n) if len(s) < n {
 }
 
 fn focusPromptInput {
-	if promptEditor := bind(document, :querySelector)('.prompt-editor-input') {
+	if promptEditor := document.querySelector('.prompt-editor-input') {
 		? -> ?
 		_ -> {
-			bind(promptEditor, :focus)()
-			bind(promptEditor, :setSelectionRange)(len(promptEditor.value), len(promptEditor.value))
+			promptEditor.focus()
+			promptEditor.setSelectionRange(len(promptEditor.value), len(promptEditor.value))
 		}
 	}
 }
@@ -359,7 +359,7 @@ fn render {
 }
 render()
 
-with bind(window, :addEventListener)('beforeunload') fn {
+with window.addEventListener('beforeunload') fn {
 	storage.persistImmediately(StateStorageKey, State)
 }
 

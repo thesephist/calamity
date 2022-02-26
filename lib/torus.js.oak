@@ -30,13 +30,13 @@ fn h(tag, args...) {
 
 fn Renderer(root) {
 	if type(root) {
-		:string -> root <- bind(document, :querySelector)(root)
+		:string -> root <- document.querySelector(root)
 	}
 
 	render := window.Torus.render
 	initialDOM := h(:div)
 	node := render(?, ?, initialDOM)
-	bind(root, :appendChild)(node)
+	root.appendChild(node)
 
 	self := {
 		node: node

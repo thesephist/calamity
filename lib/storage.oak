@@ -8,8 +8,7 @@ json := import('json')
 PersistenceInterval := 1
 
 fn load(key, defaultData) {
-	getItem := bind(window.localStorage, :getItem)
-	if data := getItem(key) {
+	if data := window.localStorage.getItem(key) {
 		? -> defaultData
 		_ -> json.parse(data)
 	}
@@ -17,8 +16,7 @@ fn load(key, defaultData) {
 
 fn persistImmediately(key, data) {
 	serialized := json.serialize(data)
-	setItem := bind(window.localStorage, :setItem)
-	setItem(key, serialized)
+	window.localStorage.setItem(key, serialized)
 }
 
 persist := debounce(PersistenceInterval, persistImmediately)
