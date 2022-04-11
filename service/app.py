@@ -1,14 +1,14 @@
 import time
 from flask import Flask, request, jsonify
-from transformers import pipeline, set_seed, GPT2Tokenizer, GPT2LMHeadModel
+from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM
 
-model_name = 'gpt2-xl'
+model_name = 'EleutherAI/gpt-j-6B'
 
 # tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # model
-model = GPT2LMHeadModel.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 model.config.temperature = 0.75
 model.config.top_p = 0.9
 
