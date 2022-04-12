@@ -19,9 +19,11 @@ generator = pipeline('text-generation',
 
 set_seed(int(time.time()))
 
-def infer(prompt, tokens_count, num_sequences):
+def infer(prompt, tokens_count, num_sequences, eos_token):
     input_tokens = len(tokenizer(prompt)['input_ids'])
     seqs = generator(prompt,
+            pad_token_id=tokenizer.eos_token_id,
+            eos_token_id=tokenizer(eos_token).input_ids[0] if eos_token else tokenizer.eos_token_id
             max_length=input_tokens + tokens_count,
             num_return_sequences=num_sequences)
     return jsonify([seq['generated_text'] for seq in seqs])
@@ -32,5 +34,5 @@ app = Flask(__name__)
 def generate():
     params = request.get_json(force=True)
     # TODO: error handling
-    return infer(params.get('text'), params.get('tokens', 10), params.get('n', 1))
+    return infer(params.get('text'), params.get('tokens', 10), params.get('n', 1), params.get('eos'))
 
