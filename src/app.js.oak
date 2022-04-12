@@ -13,6 +13,7 @@
 	trim: trim
 } := import('str')
 fmt := import('fmt')
+math := import('math')
 datetime := import('datetime')
 
 json := import('json')
@@ -24,6 +25,8 @@ storage := import('../lib/storage')
 
 DefaultTokens := 20
 DefaultN := 5
+// warn at this total token count that results may time out
+HighTokenCountWarning := 200
 StateStorageKey := 'calamity_db'
 
 State := storage.load(StateStorageKey, {
@@ -77,18 +80,18 @@ fn fetchCompletion(prompt, withCompletions) {
 	}
 }
 
-fn updateCompletions() if State.fetching? {
-	true -> ?
-	_ -> {
-		doc := currentDoc()
-		prompt := doc.prompt
-		with fetchCompletion(prompt) fn(completions) {
-			doc.completions := completions |> with map() fn(completion) [
-				prompt
-				completion |> slice(len(prompt))
-			]
-			persistAndRender()
-		}
+fn updateCompletions() if !State.fetching? -> {
+	start := time()
+	doc := currentDoc()
+	prompt := doc.prompt
+	with fetchCompletion(prompt) fn(completions) {
+		end := time()
+		doc.responseTime := end - start
+		doc.completions := completions |> with map() fn(completion) [
+			prompt
+			completion |> slice(len(prompt))
+		]
+		persistAndRender()
 	}
 }
 
@@ -329,6 +332,33 @@ fn render {
 					}, ['Generate'])
 				])
 			])
+			h(:div, ['response-meta'], {
+				doc := currentDoc()
+				totalTokens := doc.params.tokens * doc.params.n
+				[
+					h(:div, ['response-meta-time'], [
+						if doc.responseTime {
+							? -> '—'
+							_ -> fmt.format(
+								'{{0}}s ({{1}}s/tok)'
+								math.round(doc.responseTime, 2)
+								math.round(doc.responseTime / totalTokens, 3)
+							)
+						}
+					])
+					if totalTokens > HighTokenCountWarning {
+						true -> h(:div, ['response-meta-high-tokens'], [
+							h(:span, ['desktop'], [
+								'You\'re generating a lot (' + string(totalTokens) + 'tok) of text! '
+							])
+							'This may time out.'
+						])
+						_ -> h(:div, ['response-meta-tokens'], [
+							string(totalTokens) + ' total tokens'
+						])
+					}
+				]
+			})
 			h(:div, ['completions-container'], {
 				if State.fetching? {
 					true -> [h(:div, ['completions-fetching'], [
