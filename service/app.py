@@ -23,7 +23,7 @@ def infer(prompt, tokens_count, num_sequences, eos_token):
     input_tokens = len(tokenizer(prompt)['input_ids'])
     seqs = generator(prompt,
             pad_token_id=tokenizer.eos_token_id,
-            eos_token_id=tokenizer(eos_token).input_ids[0] if eos_token else tokenizer.eos_token_id
+            eos_token_id=tokenizer(eos_token).input_ids[0] if eos_token else tokenizer.eos_token_id,
             max_length=input_tokens + tokens_count,
             num_return_sequences=num_sequences)
     return jsonify([seq['generated_text'] for seq in seqs])
