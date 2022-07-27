@@ -16,7 +16,10 @@ fmt := import('fmt')
 math := import('math')
 datetime := import('datetime')
 
-json := import('json')
+json := {
+	parse: __native_json_parse
+	serialize: __native_json_serialize
+}
 storage := import('../lib/storage')
 {
 	Renderer: Renderer

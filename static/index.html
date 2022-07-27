@@ -5,6 +5,26 @@
 
 <div id="root"></div>
 
+<script>
+/* __native_json_serialize is an efficient implementation of Oak's
+libjson.serialize function, which is in the critical path of some
+interactions in the app and must be fast. It wraps JavaScript's
+JSON.stringify with support for Oak's runtime string representations. */
+function __native_json_serialize(x) {
+	return JSON.stringify(
+		x,
+		(key, val) => __is_oak_string(val) ? val.toString() : val,
+	);
+}
+/* Though not a performance bottleneck, for symmetry and efficiency reasons a
+JS-native libjson.parse is provided as well. */
+function __native_json_parse(x) {
+	return JSON.parse(
+		x,
+		(key, val) => __as_oak_string(val),
+	);
+}
+</script>
 <script src="/js/torus.min.js"></script>
 <script src="/js/bundle.js"></script>
 

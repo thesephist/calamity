@@ -3,7 +3,10 @@
 {
 	debounce: debounce
 } := import('std')
-json := import('json')
+json := {
+	parse: __native_json_parse
+	serialize: __native_json_serialize
+}
 
 PersistenceInterval := 1
 
