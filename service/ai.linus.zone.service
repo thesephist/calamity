@@ -6,7 +6,7 @@ After=network.target
 User=calamity-user
 Group=www-data
 WorkingDirectory=/home/calamity-user/calamity/service
-ExecStart=/home/calamity-user/calamity/service/.venv/bin/uwsgi --ini app.ini
+ExecStart=/home/calamity-user/calamity/service/venv/bin/uwsgi --ini app.ini
 
 [Install]
 WantedBy=multi-user.target
