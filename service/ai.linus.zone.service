@@ -1,5 +1,5 @@
 [Unit]
-Description=GPT2 as an API server
+Description=GPT as an API server
 After=network.target
 
 [Service]
