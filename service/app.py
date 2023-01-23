@@ -1,4 +1,5 @@
 import time
+import torch
 from flask import Flask, request, jsonify
 from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM
 
