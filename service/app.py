@@ -68,7 +68,7 @@ def generate():
 
 @app.route('/chat_generate/', methods=['POST'])
 def chat_generate():
-    params = request.getjson(force=True)
+    params = request.get_json(force=True)
     return chat_infer(
         params.get('context', ''),
         params.get('instruction', ''),
