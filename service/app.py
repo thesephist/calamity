@@ -42,11 +42,12 @@ def chat_infer(situation, instruction, messages):
         input_text = set_input(situation_narrative, role_instruction, conversation_history)
         inputs = tokenizer([input_text], return_tensors="pt").to(chat_model.device)
         outputs = model.generate(
-            inputs["input_ids"],
+            **inputs,
             max_new_tokens=512,
+            do_sample=True,
             temperature=1.0,
             top_p=0.9,
-            do_sample=True,
+            num_return_sequences=1,
         )
         response = tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         return response
