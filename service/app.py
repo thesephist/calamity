@@ -40,8 +40,8 @@ def chat_infer(situation, instruction, messages):
 
     def chat_generate(situation_narrative, role_instruction, conversation_history):
         input_text = set_input(situation_narrative, role_instruction, conversation_history)
-        inputs = tokenizer([input_text], return_tensors="pt").to(chat_model.device)
-        outputs = model.generate(
+        inputs = chat_tokenizer([input_text], return_tensors="pt").to(chat_model.device)
+        outputs = chat_model.generate(
             **inputs,
             max_new_tokens=512,
             do_sample=True,
@@ -49,7 +49,7 @@ def chat_infer(situation, instruction, messages):
             top_p=0.9,
             num_return_sequences=1,
         )
-        response = tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        response = chat_tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         return response
 
     return jsonify(chat_generate(situation, instruction, messages))
