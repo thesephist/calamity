@@ -52,7 +52,7 @@ def chat_infer(situation, instruction, messages):
         response = chat_tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         return response
 
-    return jsonify(chat_generate(situation, instruction, messages))
+    return chat_generate(situation, instruction, messages)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
