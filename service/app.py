@@ -22,7 +22,7 @@ chat_model = AutoModelForSeq2SeqLM.from_pretrained(chat_model_name, device_map='
 
 search_model_name = 'all-mpnet-base-v2'
 search_index_file = './search_index.json'
-search_model = SentenceTransformer(model_name) # intentionally on CPU
+search_model = SentenceTransformer(search_model_name) # intentionally on CPU
 with open(search_index_file) as f:
     index = json.load(f)
     search_texts = index['texts']
