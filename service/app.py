@@ -1,5 +1,8 @@
 import time
+import json
 import torch
+from typing import List
+import torch.nn.functional as F
 from flask import Flask, request, jsonify
 from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
 
@@ -15,6 +18,20 @@ generator = pipeline(
 chat_model_name = 'allenai/cosmo-xl'
 chat_tokenizer = AutoTokenizer.from_pretrained(chat_model_name)
 chat_model = AutoModelForSeq2SeqLM.from_pretrained(chat_model_name, device_map='auto', load_in_8bit=True)
+
+search_model_name = 'all-mpnet-base-v2'
+search_index_file = './search_index.json'
+search_model = SentenceTransformer(model_name) # intentionally on CPU
+with open(search_index_file) as f:
+    index = json.load(f)
+    search_texts = index['texts']
+    search_embeddings = torch.tensor(index['embeddings'])
+
+    def retrieve_search(query: str, n: int = 5) -> List[str]:
+        query_embedding = search_model.encode(query, convert_to_tensor=True)
+        similarities = F.cosine_similarity(query_embedding, search_embeddings)
+        indexes = sorted(range(len(texts)), key=similarities.__getitem__, reverse=True)
+        return [texts[i] for i in indexes[:n]]
 
 def infer(prompt, tokens_count, num_sequences, eos_token):
     seqs = generator(
@@ -74,5 +91,13 @@ def chat_generate():
         params.get('context', ''),
         params.get('instruction', ''),
         params.get('messages', []),
+    )
+
+@app.route('/search/', methods=['POST'])
+def search():
+    params = request.get_json(force=True)
+    return retrieve_search(
+        params.get('query', ''),
+        params.get('n', 5),
     )
 
