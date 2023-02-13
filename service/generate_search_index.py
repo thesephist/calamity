@@ -22,6 +22,7 @@ if __name__ == '__main__':
     def flatten(xs):
         return [item for sublist in xs for item in sublist]
 
+    texts = [d['content'].strip() for d in docs.values()]
     chunked_texts = flatten([chunk(t) for t in texts])
     print(f'... {len(chunked_texts)} chunks to embed.')
 
