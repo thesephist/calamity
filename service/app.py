@@ -5,6 +5,7 @@ from typing import List
 import torch.nn.functional as F
 from flask import Flask, request, jsonify
 from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
+from sentence_transformers import SentenceTransformer
 
 lm_model_name = 'EleutherAI/gpt-j-6B'
 tokenizer = AutoTokenizer.from_pretrained(lm_model_name)
