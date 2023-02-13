@@ -22,17 +22,17 @@ chat_model = AutoModelForSeq2SeqLM.from_pretrained(chat_model_name, device_map='
 
 search_model_name = 'all-mpnet-base-v2'
 search_index_file = './search_index.json'
-search_model = SentenceTransformer(search_model_name) # intentionally on CPU
+search_model = SentenceTransformer(search_model_name).to('cpu')
 with open(search_index_file) as f:
     index = json.load(f)
     search_texts = index['texts']
     search_embeddings = torch.tensor(index['embeddings'])
 
     def retrieve_search(query: str, n: int = 5) -> List[str]:
-        query_embedding = search_model.encode(query, convert_to_tensor=True)
+        query_embedding = search_model.encode(query, convert_to_tensor=True).to('cpu')
         similarities = F.cosine_similarity(query_embedding, search_embeddings)
-        indexes = sorted(range(len(texts)), key=similarities.__getitem__, reverse=True)
-        return [texts[i] for i in indexes[:n]]
+        indexes = sorted(range(len(search_texts)), key=similarities.__getitem__, reverse=True)
+        return [search_texts[i] for i in indexes[:n]]
 
 def infer(prompt, tokens_count, num_sequences, eos_token):
     seqs = generator(
