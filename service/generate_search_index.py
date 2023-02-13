@@ -1,5 +1,7 @@
 if __name__ == '__main__':
     # load
+    import json
+
     docs_path = './docs.json'
     with open(docs_path, 'rb') as f:
         content = f.read().decode('utf-8', 'ignore').encode('utf-8')
