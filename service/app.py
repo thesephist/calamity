@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import torch
@@ -7,18 +8,17 @@ from flask import Flask, request, jsonify
 from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
 from sentence_transformers import SentenceTransformer
 
-lm_model_name = 'EleutherAI/gpt-j-6B'
-tokenizer = AutoTokenizer.from_pretrained(lm_model_name)
-model = AutoModelForCausalLM.from_pretrained(lm_model_name, device_map='auto', load_in_8bit=True)
+token = os.environ['HF_TOKEN']
+
+free_vram = torch.cuda.get_device_properties(0).total_memory / 1e9
+lm_model_name = 'meta-llama/Llama-2-13b-hf' if free_vram > 16 else 'meta-llama/Llama-2-7b-hf'
+tokenizer = AutoTokenizer.from_pretrained(lm_model_name, token=token)
+model = AutoModelForCausalLM.from_pretrained(lm_model_name, token=token, device_map='auto', load_in_8bit=True)
 generator = pipeline(
     'text-generation',
     tokenizer=tokenizer,
     model=model,
 )
-
-chat_model_name = 'allenai/cosmo-xl'
-chat_tokenizer = AutoTokenizer.from_pretrained(chat_model_name)
-chat_model = AutoModelForSeq2SeqLM.from_pretrained(chat_model_name, device_map='auto', load_in_8bit=True)
 
 search_model_name = 'all-mpnet-base-v2'
 search_index_file = './search_index.json'
@@ -34,7 +34,7 @@ with open(search_index_file) as f:
         indexes = sorted(range(len(search_texts)), key=similarities.__getitem__, reverse=True)
         return [search_texts[i] for i in indexes[:n]]
 
-def infer(prompt, tokens_count, num_sequences, eos_token):
+def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
     seqs = generator(
         prompt,
         pad_token_id=tokenizer.eos_token_id,
@@ -42,35 +42,10 @@ def infer(prompt, tokens_count, num_sequences, eos_token):
         max_new_tokens=tokens_count,
         num_return_sequences=num_sequences,
         do_sample=True,
-        temperature=1.0,
+        temperature=temperature,
         top_p=0.9,
     )
     return jsonify([seq['generated_text'] for seq in seqs])
-
-def chat_infer(situation, instruction, messages):
-    def set_input(situation_narrative, role_instruction, conversation_history):
-        input_text = " <turn> ".join(conversation_history)
-        if role_instruction != "":
-            input_text = "{} <sep> {}".format(role_instruction, input_text)
-        if situation_narrative != "":
-            input_text = "{} <sep> {}".format(situation_narrative, input_text)
-        return input_text
-
-    def chat_generate(situation_narrative, role_instruction, conversation_history):
-        input_text = set_input(situation_narrative, role_instruction, conversation_history)
-        inputs = chat_tokenizer([input_text], return_tensors="pt").to(chat_model.device)
-        outputs = chat_model.generate(
-            **inputs,
-            max_new_tokens=512,
-            do_sample=True,
-            temperature=1.0,
-            top_p=0.9,
-            num_return_sequences=1,
-        )
-        response = chat_tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
-        return response
-
-    return chat_generate(situation, instruction, messages)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -83,15 +58,7 @@ def generate():
         params.get('tokens', 10),
         params.get('n', 1),
         params.get('eos'),
-    )
-
-@app.route('/chat_generate/', methods=['POST'])
-def chat_generate():
-    params = request.get_json(force=True)
-    return chat_infer(
-        params.get('context', ''),
-        params.get('instruction', ''),
-        params.get('messages', []),
+        params.get('temperature', 1.0),
     )
 
 @app.route('/search/', methods=['POST'])

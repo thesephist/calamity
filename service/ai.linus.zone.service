@@ -5,6 +5,7 @@ After=network.target
 [Service]
 User=calamity-user
 Group=www-data
+Environment="HF_TOKEN=<your token>"
 WorkingDirectory=/home/calamity-user/calamity/service
 ExecStart=/home/calamity-user/calamity/service/venv/bin/uwsgi --ini app.ini
 
