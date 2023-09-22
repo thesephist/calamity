@@ -48,7 +48,7 @@ def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
     return jsonify([seq['generated_text'] for seq in seqs])
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
+app.json.ensure_ascii = False
 
 @app.route('/generate/', methods=['POST'])
 def generate():
