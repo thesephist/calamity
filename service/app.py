@@ -35,6 +35,7 @@ with open(search_index_file) as f:
         return [search_texts[i] for i in indexes[:n]]
 
 def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
+    prompt = prompt.encode('utf-8', 'ignore').decode('utf-8', 'ignore') # ignore broken text encodings
     seqs = generator(
         prompt,
         pad_token_id=tokenizer.eos_token_id,
