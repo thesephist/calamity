@@ -12,7 +12,8 @@ token = os.environ['HF_TOKEN']
 
 free_vram = torch.cuda.get_device_properties(0).total_memory / 1e9
 lm_model_name = 'meta-llama/Llama-2-13b-hf' if free_vram > 16 else 'meta-llama/Llama-2-7b-hf'
-tokenizer = AutoTokenizer.from_pretrained(lm_model_name, token=token)
+model_max_length = 4096
+tokenizer = AutoTokenizer.from_pretrained(lm_model_name, token=token, truncation_side='left', model_max_length=model_max_length)
 model = AutoModelForCausalLM.from_pretrained(lm_model_name, token=token, device_map='auto', load_in_8bit=True)
 generator = pipeline(
     'text-generation',
@@ -40,6 +41,8 @@ def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
         prompt,
         pad_token_id=tokenizer.eos_token_id,
         eos_token_id=tokenizer(eos_token).input_ids[-1] if eos_token else tokenizer.eos_token_id,
+        truncation=True,
+        max_length=model_max_length,
         max_new_tokens=tokens_count,
         num_return_sequences=num_sequences,
         do_sample=True,
