@@ -6,6 +6,7 @@ After=network.target
 User=calamity-user
 Group=www-data
 Environment="HF_TOKEN=<your token>"
+Environment="SAFE_MODEL_MAX_LENGTH=<e.g. 1536 roughly uses 16GB at batch_size=1>"
 WorkingDirectory=/home/calamity-user/calamity/service
 ExecStart=/home/calamity-user/calamity/service/venv/bin/uwsgi --ini app.ini
 
