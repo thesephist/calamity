@@ -71,6 +71,10 @@ def infer(
     top_p,
 ):
     prompt = prompt.encode('utf-8', 'ignore').decode('utf-8', 'ignore') # ignore broken text encodings
+    prompt = tokenizer.decode(
+        tokenizer.encode(prompt)[-(safe_model_max_length - tokens_count):],
+        skip_special_tokens=True,
+    )
     seqs = generator(
         prompt,
         pad_token_id=tokenizer.eos_token_id,
@@ -78,6 +82,7 @@ def infer(
         handle_long_generation='hole',
         max_new_tokens=tokens_count,
         num_return_sequences=num_sequences,
+        return_full_text=False,
         do_sample=True,
         temperature=temperature,
         top_p=top_p,

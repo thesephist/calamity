@@ -90,10 +90,7 @@ fn updateCompletions() if !State.fetching? -> {
 	with fetchCompletion(prompt) fn(completions) {
 		end := time()
 		doc.responseTime := end - start
-		doc.completions := completions |> with map() fn(completion) [
-			prompt
-			completion |> slice(len(prompt))
-		]
+		doc.completions := completions |> map(fn(completion) [prompt, completion])
 		persistAndRender()
 	}
 }
