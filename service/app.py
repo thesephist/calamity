@@ -5,7 +5,13 @@ import torch
 from typing import List
 import torch.nn.functional as F
 from flask import Flask, request, jsonify
-from transformers import pipeline, set_seed, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
+from transformers import (
+    pipeline,
+    set_seed,
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    StoppingCriteria,
+)
 from sentence_transformers import SentenceTransformer
 
 token = os.environ['HF_TOKEN']
@@ -35,7 +41,35 @@ with open(search_index_file) as f:
         indexes = sorted(range(len(search_texts)), key=similarities.__getitem__, reverse=True)
         return [search_texts[i] for i in indexes[:n]]
 
-def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
+class StopSequenceCriteria(StoppingCriteria):
+    """
+    StoppingCriteria that implements a very basic version of a multi-token stop
+    sequence. If batch_size > 1, only looks at the first of the batch.
+    """
+    def __init__(self, prompt: str, stop_sequence: str):
+        self.prompt = prompt
+        self.stop_sequence = stop_sequence
+
+    def __call__(self, input_ids: torch.FloatTensor, scores, **kwargs):
+        # assumes no batching
+        generated_text = tokenizer.decode(input_ids[0])[len(self.prompt):]
+        return self.stop_sequence in generated_text
+
+    def __len__(self):
+        return 1
+
+    def __iter__(self):
+        yield self
+
+def infer(
+    prompt,
+    tokens_count,
+    num_sequences,
+    eos_token,
+    stop_sequence,
+    temperature,
+    top_p,
+):
     prompt = prompt.encode('utf-8', 'ignore').decode('utf-8', 'ignore') # ignore broken text encodings
     seqs = generator(
         prompt,
@@ -46,7 +80,8 @@ def infer(prompt, tokens_count, num_sequences, eos_token, temperature):
         num_return_sequences=num_sequences,
         do_sample=True,
         temperature=temperature,
-        top_p=0.9,
+        top_p=top_p,
+        stopping_criteria=StopSequenceCriteria(prompt, stop_sequence) if stop_sequence else None,
     )
     return jsonify([seq['generated_text'] for seq in seqs])
 
@@ -57,11 +92,13 @@ app.json.ensure_ascii = False
 def generate():
     params = request.get_json(force=True)
     return infer(
-        params.get('text', ''),
-        params.get('tokens', 10),
-        params.get('n', 1),
-        params.get('eos'),
-        params.get('temperature', 1.0),
+        prompt=params.get('text', ''),
+        tokens_count=params.get('tokens', 10),
+        num_sequences=params.get('n', 1),
+        eos_token=params.get('eos'),
+        stop_sequence=params.get('stop'),
+        temperature=params.get('temperature', 1.0),
+        top_p=params.get('top_p', 0.9),
     )
 
 @app.route('/search/', methods=['POST'])
