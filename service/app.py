@@ -16,8 +16,7 @@ from sentence_transformers import SentenceTransformer
 
 token = os.environ['HF_TOKEN']
 
-free_vram = torch.cuda.get_device_properties(0).total_memory / 1e9
-lm_model_name = 'meta-llama/Llama-2-13b-hf' if free_vram > 16 else 'meta-llama/Llama-2-7b-hf'
+lm_model_name = 'meta-llama/Meta-Llama-3-8B'
 safe_model_max_length = int(os.environ.get('SAFE_MODEL_MAX_LENGTH', 4096)) # 4k train-time ctx_len for Llama 2
 tokenizer = AutoTokenizer.from_pretrained(lm_model_name, token=token, model_max_length=safe_model_max_length)
 model = AutoModelForCausalLM.from_pretrained(lm_model_name, token=token, device_map='auto', load_in_8bit=True)
